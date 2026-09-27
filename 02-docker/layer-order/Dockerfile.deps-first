@@ -1,33 +1,13 @@
-# ==========================================
-# TỐT: Dependencies trước, source sau
-# ==========================================
-# Khi sửa main.go, Docker dùng lại cache của "go mod download"
-# → build nhanh hơn vì không tải lại dependencies.
-#
-# Thứ tự layers:
-#   1. go.mod        (ít thay đổi)
-#   2. go mod download (tốn thời gian, được cache)
-#   3. main.go       (hay thay đổi)
-#   4. go build
-#
-# Build:
-#   docker build --progress=plain -f Dockerfile.deps-first -t myapp:deps-first .
-
 FROM golang:1.22
 
 WORKDIR /app
 
-# Layer 1: Copy file khai báo dependencies — ít thay đổi
 COPY go.mod .
 
-# Layer 2: Tải dependencies — tốn thời gian nhưng được cache
-# khi go.mod không đổi
 RUN go mod download
 
-# Layer 3: Copy source code — hay thay đổi
 COPY main.go .
 
-# Layer 4: Build ứng dụng
 RUN CGO_ENABLED=0 go build -o myapp .
 
 EXPOSE 8080
