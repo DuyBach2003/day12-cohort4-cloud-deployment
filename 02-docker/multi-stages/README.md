@@ -21,8 +21,6 @@ docker build -f Dockerfile -t myapp-single .
 
 # Kiểm tra size
 docker images myapp-single
-# → ~800 MB (chứa toàn bộ Go toolchain)
-
 docker run -p 8080:8080 myapp-single
 curl http://localhost:8080/
 ```
@@ -34,7 +32,6 @@ docker build -f Dockerfile-multistage -t myapp-multi .
 
 # Kiểm tra size
 docker images myapp-multi
-# → ~15 MB (chỉ có binary + Alpine)
 
 docker run -p 8080:8080 myapp-multi
 curl http://localhost:8080/
@@ -42,11 +39,6 @@ curl http://localhost:8080/
 
 ## So sánh kết quả
 
-```bash
-docker images | grep myapp
-# myapp-single   ~800 MB   ← golang:1.22 base + toolchain
-# myapp-multi    ~15 MB    ← alpine:3.19 + compiled binary
-```
 
 | | Single-stage | Multi-stage |
 |---|---|---|

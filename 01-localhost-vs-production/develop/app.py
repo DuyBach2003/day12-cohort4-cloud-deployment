@@ -26,7 +26,7 @@ MAX_TOKENS = 500
 def home():
     return {"message": "Hello! Agent is running on my machine :)"}
 
-
+# curl -X POST "http://localhost:8000/ask?question=Hello"
 @app.post("/ask")
 def ask_agent(question: str):
     # ❌ Vấn đề 3: Print thay vì proper logging

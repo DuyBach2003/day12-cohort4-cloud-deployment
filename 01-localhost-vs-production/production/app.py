@@ -95,6 +95,9 @@ def root():
         "status": "running",
     }
 
+# curl -X POST http://localhost:8000/ask \
+#   -H "Content-Type: application/json" \
+#   -d '{"question": "Hello"}'
 
 @app.post("/ask")
 async def ask_agent(request: Request):
