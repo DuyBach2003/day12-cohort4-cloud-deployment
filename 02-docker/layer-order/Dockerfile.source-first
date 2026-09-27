@@ -1,0 +1,35 @@
+# ==========================================
+# XẤU: Source trước, dependencies sau
+# ==========================================
+# Khi sửa main.go, Docker mất cache từ bước COPY main.go trở đi
+# → "go mod download" phải chạy lại dù go.mod không đổi.
+#
+# Thứ tự layers:
+#   1. go.mod        (ít thay đổi)
+#   2. main.go       (hay thay đổi) ← mất cache ở đây
+#   3. go mod download               ← bị kéo theo chạy lại
+#   4. go build
+#
+# Build:
+#   docker build --progress=plain -f Dockerfile.source-first -t myapp:source-first .
+
+FROM golang:1.22
+
+WORKDIR /app
+
+# Layer 1: Copy file khai báo dependencies
+COPY go.mod .
+
+# Layer 2: Copy source code — hay thay đổi
+# Sửa main.go → mất cache từ bước này trở đi
+COPY main.go .
+
+# Layer 3: Tải dependencies — BỊ CHẠY LẠI dù go.mod không đổi
+# vì nằm SAU bước copy source đã mất cache
+RUN go mod download
+
+# Layer 4: Build ứng dụng
+RUN CGO_ENABLED=0 go build -o myapp .
+
+EXPOSE 8080
+CMD ["./myapp"]
