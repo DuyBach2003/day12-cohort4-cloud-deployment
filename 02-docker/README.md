@@ -4,7 +4,19 @@
 - Hiểu container là gì và tại sao cần nó
 - Viết Dockerfile đúng cách (single vs multi-stage)
 - Dùng Docker Compose để chạy multi-service stack
-- Tối ưu image size xuống dưới 500 MB
+- Tối ưu image size và layer cache
+
+---
+
+## Tổng quan các folder
+
+```
+02-docker/
+├── develop/          # Basic — Dockerfile đơn giản (Python)
+├── layer-order/      # So sánh thứ tự layers ảnh hưởng cache (Go)
+├── multi-stages/     # So sánh single-stage vs multi-stage build (Go)
+└── production/       # Advanced — Multi-stage + Docker Compose (Python)
+```
 
 ---
 
@@ -54,6 +66,58 @@ curl http://localhost:8000/health
 **Hai loại cache khác nhau:** `pip install --no-cache-dir` tắt cache tải package của pip, không tắt Docker layer cache. `docker build --no-cache` mới yêu cầu build lại các bước; không dùng cờ này khi đang thử quan sát cache.
 
 Tham khảo: [Docker — tối ưu thứ tự layers](https://docs.docker.com/build/cache/optimize/#order-your-layers), [quy tắc cache invalidation](https://docs.docker.com/build/cache/invalidation/), [Dockerfile reference](https://docs.docker.com/reference/dockerfile/).
+
+---
+
+## Layer Order — Thứ Tự Layers Ảnh Hưởng Cache
+
+```
+layer-order/
+├── main.go
+├── go.mod
+├── Dockerfile              # COPY . . gộp — mọi thay đổi invalidate cache
+├── Dockerfile.deps-first   # ✅ Copy go.mod trước → cache deps layer
+└── Dockerfile.source-first # ❌ Copy source trước → deps luôn rebuild
+```
+
+### Chạy thử
+```bash
+cd layer-order
+
+# So sánh: sửa main.go rồi build lại với mỗi Dockerfile
+docker build -f Dockerfile.deps-first -t layer-deps .
+docker build -f Dockerfile.source-first -t layer-source .
+
+# Quan sát: deps-first dùng cache cho bước go build deps
+# source-first phải rebuild tất cả
+```
+
+> Chi tiết: xem [layer-order/README.md](layer-order/README.md)
+
+---
+
+## Multi-Stage — So Sánh Single vs Multi-Stage Build
+
+```
+multi-stages/
+├── main.go
+├── go.mod
+├── Dockerfile               # Single-stage (~800 MB)
+└── Dockerfile-multistage    # Multi-stage (~15 MB)
+```
+
+### Chạy thử
+```bash
+cd multi-stages
+
+docker build -f Dockerfile -t myapp-single .
+docker build -f Dockerfile-multistage -t myapp-multi .
+
+# So sánh size
+docker images | grep myapp
+```
+
+> Chi tiết: xem [multi-stages/README.md](multi-stages/README.md)
 
 ---
 
