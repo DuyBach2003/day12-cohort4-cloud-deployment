@@ -139,6 +139,9 @@ production/
 # From project root
 cd ../..  # if not already there
 
+# (Tùy chọn) tạo .env.local từ template để set secrets
+cp 02-docker/production/.env.local.example 02-docker/production/.env.local
+
 # Khởi động toàn bộ stack (1 lệnh!)
 docker compose -f 02-docker/production/docker-compose.yml up
 

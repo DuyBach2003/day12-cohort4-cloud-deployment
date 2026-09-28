@@ -32,7 +32,8 @@ services:
       # ❌ KHÔNG đặt secrets trực tiếp ở đây trong production
       # ✅ Dùng: docker secret hoặc env file ngoài git
     env_file:
-      - .env.local              # secrets riêng, trong .gitignore
+      - path: .env.local        # secrets riêng, trong .gitignore
+        required: false         # optional — không bắt buộc phải tồn tại để chạy demo
     depends_on:
       redis:
         condition: service_healthy
